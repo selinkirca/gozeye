@@ -9,7 +9,6 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 import h5py
-import json
 
 # 1. SAYFA YAPILANDIRMASI (Selin Kırca - 220706005)
 st.set_page_config(page_title="Oculus AI | Göz Hastalığı Teşhis", layout="wide")
@@ -21,42 +20,30 @@ st.markdown("""
     section[data-testid="stSidebar"] { background-color: #161b22; border-right: 1px solid #30363d; }
     div[data-testid="stMetric"] { background-color: #1f2937; border: 1px solid #38444d; padding: 20px; border-radius: 12px; }
     h1, h2, h3 { color: #58a6ff !important; font-family: 'Inter', sans-serif; }
-    .stAlert { background-color: #21262d; border: 1px solid #30363d; color: #c9d1d9; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MODEL YÜKLEME VE SÜRÜM UYUMLULUK YAMASI (H5 Müdahalesi)
+# 2. MODEL YÜKLEME (GÜVENLİ MOD)
 MODEL_PATH = 'eye_disease_final_mobilenet_v1.h5'
 
 @st.cache_resource
 def load_eye_model():
     if not os.path.exists(MODEL_PATH):
-        st.error(f"❌ '{MODEL_PATH}' dosyası bulunamadı!")
+        st.error(f"❌ Dosya bulunamadı: {MODEL_PATH}")
         return None
-    
-    # Keras 3'ün 'as_list' ve 'batch_shape' hatalarını aşmak için H5 dosyasına müdahale
-    try:
-        with h5py.File(MODEL_PATH, 'r+') as f:
-            if 'model_config' in f.attrs:
-                config_raw = f.attrs['model_config']
-                if isinstance(config_raw, bytes):
-                    config_raw = config_raw.decode('utf-8')
-                
-                config_dict = json.loads(config_raw)
-                modified = False
-                
-                # Katmanlardaki batch_shape -> batch_input_shape dönüşümü (Keras 3 uyumu)
-                for layer in config_dict['config']['layers']:
-                    if 'batch_shape' in layer['config']:
-                        layer['config']['batch_input_shape'] = layer['config'].pop('batch_shape')
-                        modified = True
-                
-                if modified:
-                    f.attrs['model_config'] = json.dumps(config_dict).encode('utf-8')
-    except Exception as e:
-        pass # Dosya salt okunur olabilir veya zaten yamalanmıştır
 
-    # Ekstra Katman Yaması (Custom Objects)
+    # H5 Dosya Bütünlük Kontrolü
+    try:
+        with h5py.File(MODEL_PATH, 'r') as f:
+            # Dosya boş mu veya config eksik mi bakıyoruz
+            if len(f.keys()) == 0:
+                st.error("⚠️ Model dosyası boş görünüyor. Lütfen GitHub'a tekrar yükleyin.")
+                return None
+    except Exception as e:
+        st.error(f"⚠️ Dosya okuma hatası: {e}")
+        return None
+
+    # Sürüm Yamaları
     from tensorflow.keras.layers import InputLayer
     class CompatibleInputLayer(InputLayer):
         def __init__(self, *args, **kwargs):
@@ -65,21 +52,21 @@ def load_eye_model():
             super().__init__(*args, **kwargs)
 
     try:
-        # compile=False: Eğitim parametrelerini değil sadece mimariyi yükler (Hata riskini azaltır)
+        # compile=False ve custom_objects ile en geniş uyumluluk modunda açıyoruz
         return tf.keras.models.load_model(
             MODEL_PATH, 
             compile=False, 
             custom_objects={'InputLayer': CompatibleInputLayer}
         )
     except Exception as e:
-        st.error(f"⚠️ Kritik Yükleme Hatası: {e}")
+        st.error(f"❌ Model Yapılandırma Hatası: {e}")
+        st.info("💡 İpucu: Bu hata genellikle modelin tam yüklenememesinden kaynaklanır. Modeli GitHub web arayüzünden silip tekrar yüklemeyi deneyin.")
         return None
 
-# Modeli belleğe al
 model = load_eye_model()
 class_names = ['Cataract (Katarakt)', 'Diabetic Retinopathy', 'Glaucoma (Glokom)', 'Normal']
 
-# --- GÖRÜNTÜ İŞLEME FONKSİYONLARI ---
+# --- ANALİZ FONKSİYONLARI ---
 def apply_clahe(pil_image):
     img = np.array(pil_image.convert('RGB'))
     lab = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
@@ -91,66 +78,33 @@ def preprocess_for_model(img_array):
     img_resized = cv2.resize(img_array, (224, 224))
     return np.expand_dims(img_resized / 255.0, axis=0)
 
-# 3. SIDEBAR (Selin Kırca - 220706005)
+# 3. SIDEBAR
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/822/822102.png", width=100)
-    st.markdown("<h2 style='text-align: center;'>Oculus AI</h2>", unsafe_allow_html=True)
-    menu = st.radio("Menü Seçiniz:", ["📊 Proje Vizyonu", "🔬 Canlı Teşhis", "📈 Analiz Raporu"])
-    
+    st.image("https://cdn-icons-png.flaticon.com/512/822/822102.png", width=80)
+    st.markdown("### Oculus AI")
+    menu = st.radio("Bölümler:", ["🔬 Teşhis", "📊 Metrikler"])
     st.divider()
-    st.markdown(f"""
-    <div style='background-color: #1f2937; padding: 15px; border-radius: 10px; border: 1px solid #30363d;'>
-    <p style='margin:0;'><b>Geliştirici:</b> Selin Kırca</p>
-    <p style='margin:0;'><b>Öğrenci No:</b> 220706005</p>
-    <p style='margin:0;'><b>Ders:</b> Sağlık Bilişimi</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"**Geliştirici:** Selin Kırca\n\n**No:** 220706005")
 
 # --- BÖLÜMLER ---
-if menu == "📊 Proje Vizyonu":
-    st.header("📊 Sağlık Bilişimi: Göz Analizi")
-    st.write("Retina fotoğraflarını derin öğrenme (CNN) ile analiz ederek erken teşhisi destekler.")
-    st.info("**Teknoloji:** MobileNetV1 & TensorFlow 2.15")
-    st.success("**CLAHE Filtresi:** Görüntüdeki ince damar yapılarını belirginleştirmek için kullanılır.")
-
-elif menu == "🔬 Canlı Teşhis":
+if menu == "🔬 Teşhis":
     st.header("🔬 Retina Analiz Laboratuvarı")
-    uploaded_file = st.file_uploader("Fundus Görüntüsü Seçin...", type=["jpg", "png", "jpeg"])
+    uploaded_file = st.file_uploader("Görüntü Seçiniz...", type=["jpg", "png", "jpeg"])
     
     if uploaded_file and model is not None:
-        raw_img = Image.open(uploaded_file)
-        enhanced_img = apply_clahe(raw_img)
+        img = Image.open(uploaded_file)
+        enhanced = apply_clahe(img)
+        st.image(enhanced, width=400)
         
-        c1, c2 = st.columns(2)
-        c1.image(enhanced_img, caption="Analiz Kesiti (CLAHE Uygulandı)", use_container_width=True)
-        
-        with c2:
-            with st.spinner('Yapay Zeka İnceliyor...'):
-                x_input = preprocess_for_model(enhanced_img)
-                preds = model.predict(x_input, verbose=0)
-                idx = np.argmax(preds)
-                conf = np.max(preds)
-                
-                color = "#28a745" if 'Normal' in class_names[idx] else "#dc3545"
-                st.markdown(f"<h2 style='color: {color};'>{class_names[idx]}</h2>", unsafe_allow_html=True)
-                st.metric("Teşhis Güveni", f"%{conf*100:.2f}")
-                
-                fig = px.bar(x=class_names, y=preds[0], color=class_names, template="plotly_dark")
-                fig.update_layout(showlegend=False, height=300, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-                st.plotly_chart(fig, use_container_width=True)
+        if st.button("Analizi Başlat"):
+            preds = model.predict(preprocess_for_model(enhanced), verbose=0)
+            idx = np.argmax(preds)
+            st.success(f"Teşhis: {class_names[idx]} (%{np.max(preds)*100:.2f})")
 
-elif menu == "📈 Analiz Raporu":
-    st.header("📈 Akademik Performans")
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Doğruluk", "%91.4")
-    m2.metric("F1-Score", "0.89")
-    m3.metric("AUC", "0.97")
-    
-    st.divider()
-    z = [[145, 5, 10, 2], [3, 160, 8, 4], [12, 10, 130, 8], [5, 2, 7, 180]]
-    fig_cm = ff.create_annotated_heatmap(z, x=class_names, y=class_names, colorscale='Viridis')
-    fig_cm.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig_cm, use_container_width=True)
+elif menu == "📊 Metrikler":
+    st.header("📈 Model Başarımı")
+    st.metric("Doğruluk", "%91.4")
+    st.info("MobileNetV1 mimarisi kullanılarak %91.4 genel doğruluk oranına ulaşılmıştır.")
 
 st.divider()
-st.caption("Selin Kırca - 220706005 | © 2026")
+st.caption("Selin Kırca - 220706005 | Giresun Üniversitesi")
