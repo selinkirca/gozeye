@@ -23,22 +23,16 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MODEL YÜKLEME VE GÜVENLİK DENETİMİ
+# 2. MODEL YÜKLEME VE KRİTİK SÜRÜM YAMASI
 MODEL_PATH = 'eye_disease_final_mobilenet_v1.h5'
 
 @st.cache_resource
 def load_eye_model():
-    # Dosya Varlık Kontrolü
+    # Dosya Varlık ve Boyut Kontrolü (Hata önleme için)
     if not os.path.exists(MODEL_PATH):
-        st.error(f"❌ Kritik Hata: '{MODEL_PATH}' dosyası bulunamadı!")
+        st.error(f"❌ '{MODEL_PATH}' bulunamadı. Lütfen GitHub'a yüklendiğinden emin olun.")
         return None
     
-    # Dosya Boyut Denetimi (Signature Hatasını Önlemek İçin)
-    file_size = os.path.getsize(MODEL_PATH)
-    if file_size < 1000000: # 1 MB altı ise dosya bozuktur
-        st.error(f"⚠️ Model dosyası bozuk veya eksik yüklenmiş! (Boyut: {file_size/1024:.2f} KB)")
-        return None
-
     # --- KERAS 3 UYUMLULUK YAMALARI ---
     from tensorflow.keras.layers import InputLayer
     
@@ -60,11 +54,13 @@ def load_eye_model():
     custom_objects = {'InputLayer': CompatibleInputLayer, 'DTypePolicy': FakeDTypePolicy}
 
     try:
+        # Modeli bu özel nesnelerle yükle
         return tf.keras.models.load_model(MODEL_PATH, compile=False, custom_objects=custom_objects)
     except Exception as e:
-        st.error(f"❌ Model İmza Hatası: Dosya yapısı bozuk. Lütfen modeli GitHub'a tekrar yükleyin. Detay: {e}")
+        st.error(f"⚠️ Model Yükleme Hatası: {e}")
         return None
 
+# Modeli belleğe al
 model = load_eye_model()
 class_names = ['Cataract (Katarakt)', 'Diabetic Retinopathy', 'Glaucoma (Glokom)', 'Normal']
 
@@ -98,8 +94,9 @@ with st.sidebar:
 # --- BÖLÜMLER ---
 if menu == "📊 Proje Vizyonu":
     st.header("📊 Sağlık Bilişimi: Göz Analizi")
-    st.write("Retina fotoğraflarını derin öğrenme ile analiz ederek erken teşhisi destekler.")
-    st.info("**Mimari:** MobileNetV1 & TensorFlow 2.15")
+    st.write("Retina fotoğraflarını derin öğrenme (CNN) ile analiz ederek erken teşhisi destekler.")
+    st.info("**Teknoloji:** MobileNetV1 & TensorFlow 2.15")
+    st.success("**CLAHE Filtresi:** Görüntüdeki ince detayları (damar yapısı vb.) belirginleştirmek için kullanılır.")
 
 elif menu == "🔬 Canlı Teşhis":
     st.header("🔬 Retina Analiz Laboratuvarı")
@@ -109,16 +106,23 @@ elif menu == "🔬 Canlı Teşhis":
         if model is None:
             st.warning("⚠️ Model yüklenemediği için analiz yapılamıyor.")
         else:
-            enhanced_img = apply_clahe(Image.open(uploaded_file))
+            raw_img = Image.open(uploaded_file)
+            enhanced_img = apply_clahe(raw_img)
+            
             c1, c2 = st.columns(2)
-            c1.image(enhanced_img, caption="Analiz Kesiti (CLAHE)", use_container_width=True)
+            c1.image(enhanced_img, caption="İyileştirilmiş Görüntü (CLAHE)", use_container_width=True)
             
             with c2:
                 with st.spinner('Analiz Ediliyor...'):
-                    preds = model.predict(preprocess_for_model(enhanced_img), verbose=0)
+                    # Tahmin
+                    x_input = preprocess_for_model(enhanced_img)
+                    preds = model.predict(x_input, verbose=0)
                     idx = np.argmax(preds)
-                    st.markdown(f"<h2 style='color: #58a6ff;'>{class_names[idx]}</h2>", unsafe_allow_html=True)
-                    st.metric("Teşhis Güveni", f"%{np.max(preds)*100:.2f}")
+                    conf = np.max(preds)
+                    
+                    color = "#28a745" if 'Normal' in class_names[idx] else "#dc3545"
+                    st.markdown(f"<h2 style='color: {color};'>{class_names[idx]}</h2>", unsafe_allow_html=True)
+                    st.metric("Teşhis Güveni", f"%{conf*100:.2f}")
                     
                     fig = px.bar(x=class_names, y=preds[0], color=class_names, template="plotly_dark")
                     fig.update_layout(showlegend=False, height=300, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
