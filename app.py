@@ -15,15 +15,15 @@ st.markdown("""
     <style>
     .stApp { background-color: #0d1117; color: #c9d1d9; }
     div[data-testid="stMetric"] { background-color: #1f2937; border: 1px solid #30363d; padding: 20px; border-radius: 12px; }
-    h1, h2, h3 { color: #58a6ff !important; font-family: 'Inter', sans-serif; }
-    .report-block { background-color: #161b22; border: 1px solid #30363d; padding: 25px; border-radius: 10px; margin-bottom: 20px; }
-    .stButton>button { background-color: #238636; color: white; border-radius: 8px; width: 100%; border: none; padding: 12px; font-weight: bold; }
+    h1, h2, h3 { color: #58a6ff !important; font-family: 'Inter', sans-serif; font-weight: 600; }
+    .report-block { background-color: #161b22; border: 1px solid #30363d; padding: 25px; border-radius: 10px; margin-bottom: 25px; }
+    .stButton>button { background-color: #238636; color: white; border-radius: 8px; width: 100%; border: none; padding: 12px; font-weight: bold;}
     .stButton>button:hover { background-color: #2ea043; }
     .academic-note { font-style: italic; color: #8b949e; border-left: 3px solid #58a6ff; padding-left: 15px; margin: 15px 0; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MODEL YÜKLEME (ÇALIŞAN KODUN - DEĞİŞTİRİLMEDİ)
+# 2. MODEL YÜKLEME (LOGLARDAKİ YENİ KERAS/TF VERSİYONUNA UYUMLU)
 MODEL_PATH = 'eye_disease_v2son.keras'
 
 @st.cache_resource
@@ -32,6 +32,7 @@ def load_eye_model():
         st.error(f"❌ Model dosyası bulunamadı: {MODEL_PATH}")
         return None
     
+    # Keras 3.x uyumluluğu için InputLayer yaması
     from tensorflow.keras.layers import InputLayer
     class CompatibleInputLayer(InputLayer):
         def __init__(self, *args, **kwargs):
@@ -42,6 +43,7 @@ def load_eye_model():
     custom_objects = {'InputLayer': CompatibleInputLayer}
 
     try:
+        # Loglardaki 2.21 versiyonu için compile=False kritik
         model = tf.keras.models.load_model(
             MODEL_PATH, 
             compile=False, 
@@ -49,7 +51,7 @@ def load_eye_model():
         )
         return model
     except Exception as e:
-        st.error(f"❌ Model Yapılandırma Hatası: {e}")
+        st.error(f"❌ Model Yükleme Hatası: {e}")
         return None
 
 model = load_eye_model()
@@ -68,91 +70,55 @@ def preprocess_for_model(img_array):
     return np.expand_dims(img_resized / 255.0, axis=0)
 
 # ==========================================
-# AKADEMİK RAPOR AKIŞI (Puanlama Kriterlerine Göre)
+# GÖRSEL TASARIM: TEK SAYFA AKADEMİK AKIŞ
 # ==========================================
 
 st.title("👁️ Oculus AI: Göz Hastalıkları Teşhis Sistemi")
 st.markdown(f"**Geliştirici:** Selin Kırca (**No:** 220706005) | **Giresun Üniversitesi Bilgisayar Mühendisliği**")
 st.divider()
 
-# --- BÖLÜM 1: Problem ve Veri Seti ---
+# BÖLÜM 1: PROBLEM VE VERİ SETİ
 col1, col2 = st.columns(2)
 with col1:
     st.markdown('<div class="report-block">', unsafe_allow_html=True)
     st.subheader("1. Proje Amacı ve Önemi")
-    st.write("""
-    Bu proje, katarakt, glokom ve diyabetik retinopati gibi görme kaybına yol açan hastalıkların 
-    retina fotoğrafları üzerinden erken teşhis edilmesini amaçlar. Yapay zeka destekli bu sistem, 
-    uzman doktorların karar verme süreçlerini hızlandırarak tarama maliyetlerini düşürmeyi hedefler.
-    """)
+    st.write("Retina fotoğrafları üzerinden erken teşhis yaparak görme kaybını engellemek ve uzman doktorlara yardımcı bir ön tarama aracı sunmaktır.")
     st.markdown('</div>', unsafe_allow_html=True)
-
 with col2:
     st.markdown('<div class="report-block">', unsafe_allow_html=True)
-    st.subheader("2. Veri Seti Bilgileri")
-    st.write("""
-    **Kaynak:** Kaggle - Eye Disease Dataset.
-    \n**İçerik:** Dört ana sınıf (Cataract, Diabetic Retinopathy, Glaucoma, Normal) toplam 4.217 görüntü.
-    Eğitim sürecinde veri seti %80 eğitim ve %20 doğrulama (validation) olarak bölünmüştür.
-    """)
+    st.subheader("2. Veri Seti")
+    st.write("Kaggle Eye Disease Dataset kullanılmıştır. 4 sınıf (Katarakt, DR, Glokom, Normal) için dengeli dağılım sağlanmıştır.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- BÖLÜM 2: Teknik Detaylar ---
+# BÖLÜM 2: PERFORMANS (Loglardaki Uyarıları Gidermek İçin Genişlik Parametresi Güncellendi)
 st.divider()
-st.subheader("3. Model Mimarisi ve Eğitim Süreci")
-c1, c2, c3 = st.columns(3)
-
-with c1:
-    st.markdown("**Veri Ön İşleme:**")
-    st.write("- Kontrast Artırma (CLAHE)\n- Yeniden Boyutlandırma (224x224)\n- Normalizasyon (1/255)")
-
-with c2:
-    st.markdown("**Model Yapısı:**")
-    st.write("- **Mimari:** MobileNetV2 (Transfer Learning)\n- **Düzenleme:** Dropout (%50), BatchNormalization\n- **Aktivasyon:** Relu & Softmax")
-
-with c3:
-    st.markdown("**Hiperparametreler:**")
-    st.write("- Optimizer: Adam (lr=0.0001)\n- Loss: Categorical Crossentropy\n- Epochs: 25 | Batch: 32")
-
-# --- BÖLÜM 3: Performans Metrikleri ve Grafikler ---
-st.divider()
-st.header("📈 Model Performans Sonuçları")
-
+st.header("📈 Model Performans Analizi")
 m1, m2, m3, m4 = st.columns(4)
-m1.metric("Doğruluk (Accuracy)", "%91.4")
-m2.metric("Hassasiyet (Precision)", "0.89")
+m1.metric("Doğruluk", "%91.4")
+m2.metric("Hassasiyet", "0.89")
 m3.metric("F1-Score", "0.88")
-m4.metric("AUC Skoru", "0.97")
+m4.metric("AUC", "0.97")
 
-st.write("---")
-g1, g2 = st.columns(2)
-
-with g1:
-    st.subheader("Doğruluk ve Kayıp Grafiği")
+g_col1, g_col2 = st.columns(2)
+with g_col1:
+    st.subheader("Doğruluk ve Kayıp")
     if os.path.exists('learning_curves.png'):
-        st.image('learning_curves.png', caption="Eğitim Süreci Analizi", use_container_width=True)
+        # Loglardaki hatayı gidermek için: width="stretch" kullanıldı
+        st.image('learning_curves.png', caption="Eğitim Analizi", width="stretch")
     else:
-        st.info("💡 Not: learning_curves.png dosyası klasörde bulunamadı.")
-    st.markdown('<p class="academic-note">Yorum: Eğitim ve doğrulama eğrilerinin paralelliği, overfitting riskinin başarıyla yönetildiğini kanıtlar.</p>', unsafe_allow_html=True)
+        st.info("Eğitim grafiği bekleniyor...")
 
-with g2:
-    st.subheader("Karmaşıklık Matrisi (Confusion Matrix)")
+with g_col2:
+    st.subheader("Karmaşıklık Matrisi")
     if os.path.exists('confusion_matrix_v2.png'):
-        st.image('confusion_matrix_v2.png', caption="Sınıflandırma Detayları", use_container_width=True)
+        st.image('confusion_matrix_v2.png', caption="Hata Analizi", width="stretch")
     else:
-        st.info("💡 Not: confusion_matrix_v2.png dosyası klasörde bulunamadı.")
-    st.markdown('<p class="academic-note">Yorum: Modelin Normal ve DR sınıflarındaki başarısı yüksektir; Glokom sınıfı için veri artırımı önerilir.</p>', unsafe_allow_html=True)
+        st.info("Matris bekleniyor...")
 
-st.subheader("ROC Eğrisi Analizi")
-if os.path.exists('roc_curve_v2.png'):
-    st.image('roc_curve_v2.png', caption="AUC Değerleri", width=800)
-
-# --- BÖLÜM 4: CANLI TEST (TEKNİK ÇALIŞIRLIK) ---
+# BÖLÜM 3: CANLI TEŞHİS
 st.divider()
 st.header("🔬 Canlı Teşhis Paneli")
-st.write("Sistemin çalışmasını test etmek için bir retina görüntüsü yükleyin.")
-
-uploaded_file = st.file_uploader("Fundus Görüntüsü Seçin...", type=["jpg", "png", "jpeg"])
+uploaded_file = st.file_uploader("Bir fundus görüntüsü yükleyin...", type=["jpg", "png", "jpeg"])
 
 if uploaded_file and model is not None:
     img = Image.open(uploaded_file)
@@ -160,30 +126,20 @@ if uploaded_file and model is not None:
     
     res_col1, res_col2 = st.columns(2)
     with res_col1:
-        st.image(enhanced, caption="Analiz Edilen Görüntü", use_container_width=True)
+        st.image(enhanced, caption="İşlenmiş Görüntü", width="stretch")
     
     with res_col2:
         if st.button("Teşhis Başlat"):
-            with st.spinner('Analiz ediliyor...'):
+            with st.spinner('Yapay Zeka Analiz Yapıyor...'):
                 input_data = preprocess_for_model(enhanced)
                 preds = model.predict(input_data, verbose=0)
                 idx = np.argmax(preds)
                 conf = np.max(preds)
                 
-                st.subheader("Teşhis Sonucu")
-                color = "#238636" if "Normal" in class_names[idx] else "#da3633"
-                st.markdown(f"<h2 style='color: {color};'>{class_names[idx]}</h2>", unsafe_allow_html=True)
+                st.subheader("Tahmin Sonucu")
+                res_color = "#238636" if "Normal" in class_names[idx] else "#da3633"
+                st.markdown(f"<h1 style='color: {res_color};'>{class_names[idx]}</h1>", unsafe_allow_html=True)
                 st.metric("Güven Oranı", f"%{conf*100:.2f}")
 
-# --- BÖLÜM 5: SONUÇ VE KAYNAKÇA ---
 st.divider()
-st.subheader("4. Sonuç ve Kaynakça")
-st.write("""
-**Sonuç:** Proje kapsamında geliştirilen model, sağlık bilişimi alanında tarama süreçlerini dijitalleştirme potansiyeline sahiptir. 
-%91.4 başarı oranı tıbbi uygulamalar için umut vericidir.
-\n**Kaynakça:** \n- TensorFlow Keras Documentation. 
-- MobileNetV2: Sandler et al. (2018).
-- Kaggle Medikal Veri Setleri.
-""")
-
-st.caption("Selin Kırca - 220706005 | © 2026 Giresun Üniversitesi")
+st.caption("Selin Kırca - 220706005 | © 2026 Sağlık Bilişimi Projesi")
