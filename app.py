@@ -64,7 +64,7 @@ class_names = ['Katarakt', 'Diyabetik Retinopati', 'Glokom', 'Normal']
 # 3. GİRİŞ VE AKADEMİK TANIMLAR
 # Uygulama başlığı ve geliştirici bilgileri
 st.title("👁️ Yapay Zeka ile Göz Hastalıkları Teşhis Sistemi")
-st.markdown(f"**Geliştirici:** Selin Kırca | **Öğrenci No:** 220706005 | **Ders:** Sağlık Bilişimi")
+st.markdown(f"**Geliştirici:** Selin Kırca | **Öğrenci No:** 220706005 | **Ders:** Yapay Zeka ile Sağlık Bilişimi")
 st.divider()
 
 # BÖLÜM 1: PROBLEM VE AMAÇ
