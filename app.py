@@ -107,7 +107,7 @@ with c2:
     st.write("- CLAHE Kontrast Artırma\n- Normalizasyon (1/255)\n- Veri Artırımı (Augmentation)")
 with c3:
     st.markdown("**Model Mimarisi:**")
-    st.write("MobileNetV2 (Transfer Learning), Dropout (%50), Adam Optimizer kullanılmıştır.")
+    st.write("MobileNetV2 (Transfer Learning), Dropout (%50), Adam Optimizer kullanılmıştır. Epoch Sayısı:30")
 
 # BÖLÜM 3: PERFORMANS ANALİZİ
 st.divider()
@@ -119,6 +119,7 @@ m1.metric("Genel Doğruluk", "%91.4")
 m2.metric("Kesinlik (Precision)", "0.89")
 m3.metric("Duyarlılık (Recall)", "0.88")
 m4.metric("AUC Skoru", "0.97")
+m5.metric("F1 Skoru", "0.88")
 
 st.write("---")
 g1, g2 = st.columns(2)
