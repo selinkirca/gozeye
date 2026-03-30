@@ -12,16 +12,17 @@ import plotly.express as px  # İnteraktif grafikler oluşturmak için
 st.set_page_config(page_title="Göz Hastalığı Teşhis Sistemi", layout="wide")
 
 # --- GELİŞMİŞ AKADEMİK TASARIM CSS ---
-# Arayüzün profesyonel ve karanlık modda görünmesi için özel stil tanımlamaları
+# --- AYDINLIK (BEYAZ) TASARIM CSS ---
+# Arka plan beyaz, metinler koyu gri/lacivert olacak şekilde güncellendi
 st.markdown("""
     <style>
-    .stApp { background-color: #0d1117; color: #c9d1d9; } /* Arka plan ve yazı rengi */
-    div[data-testid="stMetric"] { background-color: #1f2937; border: 1px solid #30363d; padding: 20px; border-radius: 12px; } /* Metrik kutuları stili */
-    h1, h2, h3 { color: #58a6ff !important; font-family: 'Inter', sans-serif; font-weight: 600; } /* Başlık stilleri */
-    .report-block { background-color: #161b22; border: 1px solid #30363d; padding: 25px; border-radius: 10px; margin-bottom: 25px; } /* Bölüm çerçeveleri */
-    .stButton>button { background-color: #238636; color: white; border-radius: 8px; width: 100%; border: none; padding: 12px; font-weight: bold;} /* Buton tasarımı */
-    .stButton>button:hover { background-color: #2ea043; } /* Buton üzerine gelince renk değişimi */
-    .academic-note { font-style: italic; color: #8b949e; border-left: 4px solid #58a6ff; padding-left: 15px; margin: 15px 0; } /* Akademik yorum kutusu */
+    .stApp { background-color: #ffffff; color: #1f2937; } /* Arka plan beyaz, yazı koyu gri */
+    div[data-testid="stMetric"] { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; } /* Metrik kutuları hafif gri */
+    h1, h2, h3 { color: #1e40af !important; font-family: 'Inter', sans-serif; font-weight: 600; } /* Başlıklar koyu mavi */
+    .report-block { background-color: #f1f5f9; border: 1px solid #e2e8f0; padding: 25px; border-radius: 10px; margin-bottom: 25px; } /* Bölüm çerçeveleri açık gri */
+    .stButton>button { background-color: #2563eb; color: white; border-radius: 8px; width: 100%; border: none; padding: 12px; font-weight: bold;} /* Buton mavi */
+    .stButton>button:hover { background-color: #1d4ed8; } /* Buton üzerine gelince koyu mavi */
+    .academic-note { font-style: italic; color: #475569; border-left: 4px solid #2563eb; padding-left: 15px; margin: 15px 0; } /* Akademik not mavi kenarlı */
     </style>
     """, unsafe_allow_html=True)
 
