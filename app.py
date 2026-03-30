@@ -198,5 +198,7 @@ Geliştirilen bu sistem, %91.4 doğruluk oranı ile göz hastalıklarının erke
 - Sandler, M., et al. (2018). MobileNetV2: Inverted Residuals and Linear Bottlenecks.
 - Kaggle: Eye Disease Dataset (Küratörlü medikal veriler).
 - TensorFlow & Keras API Dokümantasyonu.
+- Reza, A. M. (2004). Realization of the Contrast Limited Adaptive Histogram Equalization (CLAHE) for Real-Time Image Enhancement. Journal of VLSI Signal Processing.
+https://jamanetwork.com/journals/jama/fullarticle/2588763
 """)
 st.caption("Selin Kırca - 220706005 | © 2026 Giresun Üniversitesi Bilgisayar Mühendisliği")
