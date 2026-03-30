@@ -7,7 +7,7 @@ import os
 import pandas as pd
 import plotly.express as px
 
-# 1. SAYFA YAPILANDIRMASI (Selin Kırca - 220706005)
+# Sayfa Konfigürasyonu (Kriter 17 & 18)
 st.set_page_config(page_title="Göz Hastalığı Teşhis Sistemi", layout="wide")
 
 # Tasarım ve Estetik
@@ -22,13 +22,13 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MODEL YÜKLEME
+# Model Yükleme (Kriter 19)
 MODEL_PATH = 'eye_disease_v2son.keras'
 
 @st.cache_resource
 def load_eye_model():
     if not os.path.exists(MODEL_PATH):
-        st.error("Model dosyası sunucuda bulunamadı.")
+        st.error(f"⚠️ Model dosyası bulunamadı: {MODEL_PATH}")
         return None
     from tensorflow.keras.layers import InputLayer
     class CompatibleInputLayer(InputLayer):
@@ -39,57 +39,50 @@ def load_eye_model():
     try:
         model = tf.keras.models.load_model(MODEL_PATH, compile=False, custom_objects={'InputLayer': CompatibleInputLayer})
         return model
-    except Exception: return None
+    except Exception as e:
+        st.error(f"Model yükleme hatası: {e}")
+        return None
 
 model = load_eye_model()
 class_names = ['Katarakt', 'Diyabetik Retinopati', 'Glokom', 'Normal']
 
-# 3. GİRİŞ BİLGİLERİ
+# Giriş ve Kimlik Bilgileri (Kriter 20)
 st.title("👁️ Derin Öğrenme ile Göz Hastalıkları Teşhis Sistemi")
 st.markdown(f"**Geliştirici:** Selin Kırca | **Öğrenci No:** 220706005 | **Üniversite:** Giresun Üniversitesi")
 st.divider()
 
-# BÖLÜM 1: PROBLEM VE AMAÇ
-with st.container():
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('<div class="report-block">', unsafe_allow_html=True)
-        st.subheader("Problem Tanımı ve Çalışmanın Önemi")
-        st.write("""
-        Küresel ölçekte katarakt, glokom ve diyabetik retinopati, kalıcı görme kaybının en yaygın nedenleridir. 
-        Bu çalışma, retina fundus görüntüleri üzerinden hastalıkların saniyeler içinde tespit edilmesini sağlayarak, 
-        erken teşhis süreçlerine dijital bir destek sunmayı amaçlamaktadır.
-        """)
-        st.markdown('</div>', unsafe_allow_html=True)
-    with col2:
-        st.markdown('<div class="report-block">', unsafe_allow_html=True)
-        st.subheader("Proje Hedefleri")
-        st.write("""
-        - MobileNetV2 mimarisi ile yüksek doğruluklu sınıflandırma sağlamak.
-        - Görüntü işleme teknikleri ile medikal veri kalitesini artırmak.
-        - Kullanıcı dostu bir klinik karar destek arayüzü oluşturmak.
-        """)
-        st.markdown('</div>', unsafe_allow_html=True)
+# BÖLÜM 1: PROBLEM VE AMAÇ (Kriter 1, 2, 3)
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown('<div class="report-block">', unsafe_allow_html=True)
+    st.subheader("Problem Tanımı ve Önemi")
+    st.write("Retina hastalıklarının erken teşhisi, kalıcı görme kayıplarını engellemek için hayati önem taşır. Bu çalışma, uzman eksikliği olan bölgelerde hızlı tarama desteği sunmayı amaçlar.")
+    st.markdown('</div>', unsafe_allow_html=True)
+with col2:
+    st.markdown('<div class="report-block">', unsafe_allow_html=True)
+    st.subheader("Proje Hedefleri")
+    st.write("- Transfer learning ile yüksek doğruluklu teşhis.\n- Görüntü işleme ile medikal veri kalitesini artırma.\n- Erişilebilir bir web arayüzü.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# BÖLÜM 2: VERİ SETİ VE METODOLOJİ
+# BÖLÜM 2: VERİ VE METODOLOJİ (Kriter 4-11)
 st.divider()
-st.header("Veri Seti ve Uygulanan Metodoloji")
+st.header("Veri Seti ve Metodoloji")
 c1, c2, c3 = st.columns(3)
 with c1:
     st.markdown("**Veri Seti:**")
-    st.write("Kaggle Eye Disease Dataset. 4 farklı hastalık sınıfı ve dengeli veri dağılımı.")
+    st.write("Kaggle Eye Disease Dataset (4 Sınıf).")
 with c2:
     st.markdown("**Ön İşleme:**")
-    st.write("- CLAHE Filtresi\n- Normalizasyon\n- Veri Artırımı (Augmentation)")
+    st.write("CLAHE Filtresi, Normalizasyon, Augmentation.")
 with c3:
-    st.markdown("**Eğitim Ayrımı:**")
-    st.write("%80 Eğitim, %20 Doğrulama verisi kullanılmıştır.")
+    st.markdown("**Mimari:**")
+    st.write("MobileNetV2, Dropout (%50), Adam Optimizer.")
 
-# BÖLÜM 3: PERFORMANS ANALİZİ
+# BÖLÜM 3: PERFORMANS VE GRAFİKLER (Kriter 12-16)
 st.divider()
-st.header("Performans Metrikleri ve Grafiksel Analiz")
+st.header("Performans Metrikleri ve Analizler")
 m1, m2, m3, m4 = st.columns(4)
-m1.metric("Genel Doğruluk", "%91.4")
+m1.metric("Doğruluk", "%91.4")
 m2.metric("Kesinlik", "0.89")
 m3.metric("Duyarlılık", "0.88")
 m4.metric("AUC Skoru", "0.97")
@@ -97,28 +90,30 @@ m4.metric("AUC Skoru", "0.97")
 g1, g2 = st.columns(2)
 with g1:
     st.subheader("Eğitim Süreci Analizi")
-    # Dosya yolunu 'learning_curves.png' olarak güncelledik
     if os.path.exists('learning_curves.png'):
         st.image('learning_curves.png', caption="Doğruluk ve Kayıp Grafikleri", width=600)
-    st.markdown('<p class="academic-note">Yorum: Eğitim ve doğrulama eğrilerinin paralelliği, modelin aşırı öğrenme (overfitting) yapmadan genelleme yeteneği kazandığını kanıtlamaktadır.</p>', unsafe_allow_html=True)
+    else:
+        st.error("❌ 'learning_curves.png' dosyası GitHub reponuzda bulunamadı!")
+    st.markdown('<p class="academic-note">Yorum: Eğitim ve doğrulama eğrilerinin paralelliği, modelin overfitting yapmadığını kanıtlar.</p>', unsafe_allow_html=True)
 
 with g2:
-    st.subheader("Karmaşıklık Matrisi (Confusion Matrix)")
-    # Dosya yolunu 'confusion_matrix_final.png' olarak güncelledik
+    st.subheader("Karmaşıklık Matrisi")
     if os.path.exists('confusion_matrix_final.png'):
         st.image('confusion_matrix_final.png', caption="Sınıflandırma Hata Analizi", width=600)
-    st.markdown('<p class="academic-note">Yorum: Model Normal ve DR sınıflarında yüksek başarı gösterirken, Glokom ve Normal arasındaki benzerlikler kısıtlı karışıklığa yol açmıştır.</p>', unsafe_allow_html=True)
+    else:
+        st.error("❌ 'confusion_matrix_final.png' dosyası GitHub reponuzda bulunamadı!")
+    st.markdown('<p class="academic-note">Yorum: Model Normal ve DR sınıflarında oldukça yüksek başarı göstermektedir.</p>', unsafe_allow_html=True)
 
 st.subheader("ROC Eğrisi Analizi")
-# Dosya yolunu 'roc_curve_final.png' olarak güncelledik
 if os.path.exists('roc_curve_final.png'):
     st.image('roc_curve_final.png', caption="Sınıf Bazlı AUC Analizi", width=700)
-st.markdown('<p class="academic-note">Yorum: AUC değerlerinin 0.95 üzerinde olması, modelin sağlıklı ve hastalıklı dokuyu ayırt etme gücünün mükemmele yakın olduğunu gösterir.</p>', unsafe_allow_html=True)
+else:
+    st.error("❌ 'roc_curve_final.png' dosyası GitHub reponuzda bulunamadı!")
 
-# BÖLÜM 4: CANLI TEŞHİS
+# BÖLÜM 4: CANLI TEŞHİS (Kriter 19)
 st.divider()
-st.header("🔬 Retina Analiz Laboratuvarı")
-uploaded_file = st.file_uploader("Analiz için görüntü yükleyiniz...", type=["jpg", "png", "jpeg"])
+st.header("🔬 Canlı Teşhis Laboratuvarı")
+uploaded_file = st.file_uploader("Görüntü Yükleyin...", type=["jpg", "png", "jpeg"])
 
 if uploaded_file and model is not None:
     img = Image.open(uploaded_file)
@@ -130,24 +125,18 @@ if uploaded_file and model is not None:
     
     col_img, col_res = st.columns(2)
     with col_img:
-        st.image(enhanced, caption="İşlenmiş Görüntü", width=400)
+        st.image(enhanced, caption="Analiz Edilen Görüntü", width=400)
     with col_res:
         if st.button("Teşhis Et"):
             prep = cv2.resize(enhanced, (224, 224))
             prep = np.expand_dims(prep / 255.0, axis=0)
             preds = model.predict(prep, verbose=0)
             idx = np.argmax(preds)
-            st.success(f"Tahmin Edilen Sonuç: {class_names[idx]}")
+            st.success(f"Teşhis: {class_names[idx]}")
             st.metric("Güven Oranı", f"%{np.max(preds)*100:.2f}")
 
-# BÖLÜM 5: SONUÇ VE KAYNAKÇA
+# BÖLÜM 5: SONUÇ (Kriter 20)
 st.divider()
 st.subheader("Sonuç ve Kaynakça")
-st.write("""
-Derin öğrenme teknikleri ile geliştirilen bu sistem, retina hastalıklarının teşhisinde %91.4 doğruluk başarısına ulaşmıştır. 
-\n**Kaynakça:**
-- Sandler, M., et al. (2018). MobileNetV2.
-- Kaggle: Eye Disease Dataset.
-- TensorFlow Keras API.
-""")
+st.write("Bu çalışmada %91.4 başarıya ulaşılmıştır. Kaynakça: Kaggle, MobileNetV2 Paper, TF Keras Docs.")
 st.caption("Selin Kırca - 220706005 | © 2026 Giresun Üniversitesi")
