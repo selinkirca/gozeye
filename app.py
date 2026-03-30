@@ -114,7 +114,7 @@ st.divider()
 st.header("📈 Model Performans Analizi")
 
 # Modelin eğitim başarısını gösteren temel metrik kutuları
-m1, m2, m3, m4 = st.columns(4)
+m1, m2, m3, m4,m5 = st.columns(5)
 m1.metric("Genel Doğruluk", "%91.4")
 m2.metric("Kesinlik (Precision)", "0.89")
 m3.metric("Duyarlılık (Recall)", "0.88")
