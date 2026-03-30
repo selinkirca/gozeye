@@ -101,7 +101,7 @@ st.header("🔬 Veri Seti ve Metodoloji")
 c1, c2, c3 = st.columns(3)
 with c1:
     st.markdown("**Veri Seti:**")
-    st.write("Kaggle Eye Disease Dataset kullanılmıştır. 4 farklı hastalık sınıfı ve dengeli veri dağılımı sağlanmıştır.")
+    st.write("Kaggle Eye Disease Dataset kullanılmıştır. 4 farklı hastalık sınıfı ve dengeli veri dağılımı sağlanmıştır. Katarakt, Diyabetik Retinopati, Glokom, Normal")
 with c2:
     st.markdown("**Veri Ön İşleme:**")
     st.write("- CLAHE Kontrast Artırma\n- Normalizasyon (1/255)\n- Veri Artırımı (Augmentation)")
