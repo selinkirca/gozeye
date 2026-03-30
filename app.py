@@ -24,7 +24,8 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # 2. MODEL YÜKLEME (MEVCUT ÇALIŞAN MANTIK - BOZULMADI)
-MODEL_PATH = 'eye_disease_v2son.keras'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, 'eye_disease_v2son.keras')
 
 @st.cache_resource
 def load_eye_model():
