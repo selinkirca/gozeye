@@ -18,8 +18,8 @@ st.markdown("""
    <style>
     .stApp { background-color: #ffffff; color: #1f2937; } /* Arka plan beyaz, yazı koyu gri */
     div[data-testid="stMetric"] { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; } /* Metrik kutuları hafif gri */
-    div[data-testid="stMetricLabel"] > div { color: #000000 !important; font-weight: bold !important; } /* Metrik başlıkları SİYAH */
-    div[data-testid="stMetricValue"] > div { color: #000000 !important; } /* Metrik değerleri SİYAH */
+    div[data-testid="stMetricLabel"] > div { color: #000000 !important; font-weight: bold !important; } /* Metrik başlıkları TAM SİYAH */
+    div[data-testid="stMetricValue"] > div { color: #000000 !important; } /* Metrik değerleri TAM SİYAH */
     h1, h2, h3 { color: #1e40af !important; font-family: 'Inter', sans-serif; font-weight: 600; } /* Başlıklar koyu mavi */
     .report-block { background-color: #f1f5f9; border: 1px solid #e2e8f0; padding: 25px; border-radius: 10px; margin-bottom: 25px; } /* Bölüm çerçeveleri açık gri */
     .stButton>button { background-color: #2563eb; color: white; border-radius: 8px; width: 100%; border: none; padding: 12px; font-weight: bold;} /* Buton mavi */
