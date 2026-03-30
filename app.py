@@ -16,15 +16,18 @@ st.set_page_config(page_title="Göz Hastalığı Teşhis Sistemi", layout="wide"
 # Arka plan beyaz, metinler koyu gri/lacivert olacak şekilde güncellendi
 st.markdown("""
    <style>
-    .stApp { background-color: #ffffff; color: #1f2937; } /* Arka plan beyaz, yazı koyu gri */
-    div[data-testid="stMetric"] { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; } /* Metrik kutuları hafif gri */
-    div[data-testid="stMetricLabel"] > div { color: #000000 !important; font-weight: bold !important; } /* Metrik başlıkları TAM SİYAH */
-    div[data-testid="stMetricValue"] > div { color: #000000 !important; } /* Metrik değerleri TAM SİYAH */
-    h1, h2, h3 { color: #1e40af !important; font-family: 'Inter', sans-serif; font-weight: 600; } /* Başlıklar koyu mavi */
-    .report-block { background-color: #f1f5f9; border: 1px solid #e2e8f0; padding: 25px; border-radius: 10px; margin-bottom: 25px; } /* Bölüm çerçeveleri açık gri */
-    .stButton>button { background-color: #2563eb; color: white; border-radius: 8px; width: 100%; border: none; padding: 12px; font-weight: bold;} /* Buton mavi */
-    .stButton>button:hover { background-color: #1d4ed8; } /* Buton üzerine gelince koyu mavi */
-    .academic-note { font-style: italic; color: #475569; border-left: 4px solid #2563eb; padding-left: 15px; margin: 15px 0; } /* Akademik not mavi kenarlı */
+    .stApp { background-color: #ffffff; color: #1f2937; } /* Arka plan beyaz */
+    div[data-testid="stMetric"] { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; }
+    /* Hem etiketi hem değeri hem de ok işaretlerini siyah yapar */
+    [data-testid="stMetricLabel"] { color: #000000 !important; } 
+    [data-testid="stMetricValue"] { color: #000000 !important; }
+    [data-testid="stMetricLabel"] > div > div { color: #000000 !important; font-weight: bold !important; opacity: 1 !important; }
+    [data-testid="stMetricValue"] > div { color: #000000 !important; font-weight: bold !important; }
+    h1, h2, h3 { color: #1e40af !important; font-family: 'Inter', sans-serif; font-weight: 600; }
+    .report-block { background-color: #f1f5f9; border: 1px solid #e2e8f0; padding: 25px; border-radius: 10px; margin-bottom: 25px; }
+    .stButton>button { background-color: #2563eb; color: white; border-radius: 8px; width: 100%; border: none; padding: 12px; font-weight: bold;}
+    .stButton>button:hover { background-color: #1d4ed8; }
+    .academic-note { font-style: italic; color: #475569; border-left: 4px solid #2563eb; padding-left: 15px; margin: 15px 0; }
     </style>
     """, unsafe_allow_html=True)
 
