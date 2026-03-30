@@ -64,7 +64,7 @@ class_names = ['Katarakt', 'Diyabetik Retinopati', 'Glokom', 'Normal']
 # 3. GİRİŞ VE AKADEMİK TANIMLAR
 # Uygulama başlığı ve geliştirici bilgileri
 st.title("👁️ Yapay Zeka ile Göz Hastalıkları Teşhis Sistemi")
-st.markdown(f"**Geliştirici:** Selin Kırca | **Öğrenci No:** 220706005 | **Ders:** Yapay Zeka ile Sağlık Bilişimi")
+st.markdown(f"**Geliştirici:** Selin Kırca | **Öğrenci No:** 220706005 | **Ders:** Sağlık Bilişimi")
 st.divider()
 
 # BÖLÜM 1: PROBLEM VE AMAÇ
@@ -191,9 +191,6 @@ Geliştirilen bu sistem, %91.4 doğruluk oranı ile göz hastalıklarının erke
 \n**Kaynakça:**
 - Sandler, M., et al. (2018). MobileNetV2: Inverted Residuals and Linear Bottlenecks.
 - Kaggle: Eye Disease Dataset (Küratörlü medikal veriler).
-- TensorFlow & Keras API Dokümantasyonu.
-""")
-st.caption("Selin Kırca - 220706005 | © 2026 Giresun Üniversitesi Bilgisayar Mühendisliği")
 - TensorFlow & Keras API Dokümantasyonu.
 """)
 st.caption("Selin Kırca - 220706005 | © 2026 Giresun Üniversitesi Bilgisayar Mühendisliği")
